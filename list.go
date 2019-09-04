@@ -3,6 +3,7 @@ package list
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -107,6 +108,19 @@ type ModuleError struct {
 	Err string // the error itself
 }
 
+type ExecError struct {
+	Err    error
+	Stderr string
+}
+
+func (ee *ExecError) Error() string {
+	return fmt.Sprintf("%s\n%s", ee.Err, ee.Stderr)
+}
+
+func NewExecError(err error, stderr string) *ExecError {
+	return &ExecError{err, stderr}
+}
+
 func GoList(workDir string, path string) ([]Package, error) {
 	cmd := exec.Command("go", "list", "-json", path)
 	cmd.Dir = workDir
@@ -117,7 +131,7 @@ func GoList(workDir string, path string) ([]Package, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, NewExecError(err, stderr.String())
 	}
 
 	packages := []Package{}
@@ -149,7 +163,7 @@ func GoListModule(workDir string, path string) ([]Module, error) {
 
 	err := cmd.Run()
 	if err != nil {
-		return nil, err
+		return nil, NewExecError(err, stderr.String())
 	}
 
 	modules := []Module{}
