@@ -127,6 +127,7 @@ func GoList(workDir string, path string, args ...string) ([]Package, error) {
 	cmdArgs := append([]string{"list", "-json"}, args...)
 	cmdArgs = append(cmdArgs, path)
 	cmd := exec.Command(cmdName, cmdArgs...)
+	cmd.Env = os.Environ()
 	cmd.Dir = workDir
 
 	var stdout, stderr bytes.Buffer
